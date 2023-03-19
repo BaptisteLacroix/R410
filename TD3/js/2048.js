@@ -2,6 +2,7 @@
 
 const grilleSize = 4;
 let grille;
+let coupNumber = 0;
 
 function onLoad() {
     console.log('Processus de chargement du document terminé…');
@@ -82,17 +83,22 @@ function insertTestValue(value) {
  * @param event - The event object is a JavaScript object that contains information about the event that occurred.
  */
 function keyboardAction(event) {
+    console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n")
     switch (event.keyCode) {
         case 37:
+            coupNumber++;
             moveLeft();
             break;
         case 38:
+            coupNumber++;
             moveUp();
             break;
         case 39:
+            coupNumber++;
             moveRight();
             break;
         case 40:
+            coupNumber++;
             moveDown();
             break;
     }
@@ -120,7 +126,7 @@ function moveUp() {
                 if (line !== 0) {
                     line = line - 1;
                 }
-                hasMoved = moveBox(lines, line, i, j, actualBox, emptyBox, hasMoved);
+                hasMoved = moveBoxUpDown(lines, line, i, j, actualBox, emptyBox, hasMoved);
             }
         }
     }
@@ -158,21 +164,17 @@ function moveDown() {
     let lines = document.getElementsByClassName('row');
     let hasMoved = false;
     // for each line
-    for (let i = grilleSize - 1; i >= 0; i--) {
+    for(let row = grilleSize - 1; row >= 0; row--) {
         // get all boxes of the line
-        let actualBox = lines[i].children;
+        let actualBox = lines[row].children;
         // for each box
-        for (let j = 0; j < grilleSize; j++) {
+        for(let column = 0; column < grilleSize - 1; column++) {
             // if the box is not empty
-            if (actualBox[j].innerHTML !== "") {
-                // Move the box to the most down empty box
-                // get the most down empty box from all the lines at the same column
-                let [line, emptyBox] = getMostDownEmptyBox(i, j);
-                // if there is an empty box and just above the emptybox there is a bow with the same value
-                if (line !== grilleSize - 1) {
-                    line = line + 1;
-                }
-                hasMoved = moveBox(lines, line, i, j, actualBox, emptyBox, hasMoved);
+            if (actualBox[column].innerHTML !== "") {
+                // Move the box to the most down empty box or if there is a box with the same value, merge the boxes
+                // So get the coordinate of the most down empty box or the box with the same value
+                let [lineCoordinate, box] = getMostEmptyOrMergeBox(row, column);
+                hasMoved =
             }
         }
     }
@@ -183,23 +185,28 @@ function moveDown() {
     }
 }
 
+function moveOrMergeBox(lineCoordinate, mostNearBox, actualBox) {
+    let hasMoved = false;
+    return hasMoved;
+}
+
 /**
  * It returns the most down empty box of a column
  * @param line - the line of the box that we want to check
  * @param column - the column number of the box that was clicked
  * @returns An array with the line of the most down empty box and the empty box.
  */
-function getMostDownEmptyBox(line, column) {
+function getMostEmptyOrMergeBox(line, column) {
     let lines = document.getElementsByClassName('row');
-    let emptyBox = null;
+    let box = null;
     let mostDownEmptyBoxLine = line;
-    for (let i = line; i < grilleSize; i++) {
-        if (lines[i].children[column].innerHTML === "") {
-            emptyBox = lines[i].children[column];
+    for (let i = line; i < grilleSize - 1; i++) {
+        if (lines[i].children[column].innerHTML === "" || (i !== line && lines[i].children[column].innerHTML === lines[line].children[column].innerHTML)) {
+            box = lines[i].children[column];
             mostDownEmptyBoxLine = i;
         }
     }
-    return [mostDownEmptyBoxLine, emptyBox];
+    return [mostDownEmptyBoxLine, box];
 }
 
 /**
@@ -223,7 +230,7 @@ function moveLeft() {
                 if (column !== 0) {
                     column = column - 1;
                 }
-                hasMoved = moveBox(lines, column, i, j, actualBox, emptyBox, hasMoved);
+                hasMoved = moveBoxLeftRight(lines, column, i, j, actualBox, emptyBox, hasMoved);
             }
         }
     }
@@ -266,7 +273,6 @@ function moveRight() {
         for (let j = grilleSize - 1; j >= 0; j--) {
             // if the box is not empty
             if (actualBox[j].innerHTML !== "") {
-                console.log(actualBox[j].innerHTML)
                 // Move the box to the most right empty box
                 // get the most right empty box from all the lines at the same column
                 let [column, emptyBox] = getMostRightEmptyBox(i, j);
@@ -274,7 +280,7 @@ function moveRight() {
                 if (column !== grilleSize - 1) {
                     column = column + 1;
                 }
-                hasMoved = moveBox(lines, column, i, j, actualBox, emptyBox, hasMoved);
+                hasMoved = moveBoxLeftRight(lines, column, i, j, actualBox, emptyBox, hasMoved);
             }
         }
     }
@@ -307,26 +313,78 @@ function getMostRightEmptyBox(line, column) {
 /**
  * It moves the box to the empty box if there is one, or it fuses the box with the box above if it's the same number
  * @param lines - the array of lines
- * @param line - the line above the actual box
- * @param i - the line we are currently on
- * @param j - the index of the box we're currently looking at
- * @param acutalBoxes - the boxes of the line we are currently on
+ * @param lineAbove - the line above the actual box
+ * @param actualLine - the line we are currently on
+ * @param column - the index of the box we're currently looking at
+ * @param actualBox - the boxes of the line we are currently on
  * @param emptyBox - the first empty box found in the line above
  * @param hasMoved - a boolean that will be true if the box has moved
  * @returns the value of hasMoved.
  */
-function moveBox(lines, line, i, j, acutalBoxes, emptyBox, hasMoved) {
-    if (line !== i && lines[line].children[j].innerHTML === acutalBoxes[j].innerHTML) {
+function moveBoxUpDown(lines, lineAbove, actualLine, column, actualBox, emptyBox, hasMoved) {
+    console.log("-----------     " + coupNumber + "     -----------")
+    console.log("lineAbove : " + lineAbove + " acutalLine : " + actualLine + " column : " + column);
+    console.log("actualBox : " + actualBox[column].innerHTML);
+    console.log("lines[line].children[j].innerHTML : " + lines[lineAbove].children[column].innerHTML);
+    if (lineAbove !== actualLine && lines[lineAbove].children[column].innerHTML === actualBox[column].innerHTML) {
         // fusion the actual box with the line above
-        let caseAbove = lines[line].children[j];
-        caseAbove.innerHTML = parseInt(caseAbove.innerHTML) + parseInt(acutalBoxes[j].innerHTML);
+        let caseAbove = lines[lineAbove].children[column];
+        caseAbove.innerHTML = parseInt(caseAbove.innerHTML) + parseInt(actualBox[column].innerHTML);
         // move the box to the empty box
-        acutalBoxes[j].innerHTML = "";
+        actualBox[column].innerHTML = "";
         // update the grid : grille
         let myBox = {
             value: caseAbove.innerHTML, lastInsert: false
         };
-        grille[line][j] = Object.create(myBox);
+        grille[lineAbove][column] = Object.create(myBox);
+        myBox = {
+            value: "", lastInsert: false
+        }
+        grille[actualLine][column] = Object.create(myBox);
+        hasMoved = true;
+    }
+    // else if there is an empty box
+    else if (emptyBox !== null) {
+        // move the box to the empty box
+        emptyBox.innerHTML = actualBox[column].innerHTML;
+        actualBox[column].innerHTML = "";
+        // update the grid : grille
+        let myBox = {
+            value: emptyBox.innerHTML, lastInsert: false
+        }
+        grille[lineAbove][column] = Object.create(myBox);
+        myBox = {
+            value: "", lastInsert: false
+        }
+        grille[actualLine][column] = Object.create(myBox);
+        hasMoved = true;
+    }
+    return hasMoved;
+}
+
+/**
+ * It moves the box to the left or to the right
+ * @param lines - the lines of the grid
+ * @param column - the column of the box that is being compared to the actual box
+ * @param i - the line number
+ * @param j - the index of the box we're currently looking at
+ * @param actualBox - the array of boxes in the current line
+ * @param emptyBox - the empty box
+ * @param hasMoved - a boolean that will be used to know if the boxes have moved or not
+ * @returns the value of hasMoved.
+ */
+function moveBoxLeftRight(lines, column, i, j, actualBox, emptyBox, hasMoved) {
+    if (column !== j && lines[i].children[column].innerHTML === actualBox[j].innerHTML) {
+        // fusion the actual box with the line above
+        let caseLeft = lines[i].children[column];
+        caseLeft.innerHTML = parseInt(caseLeft.innerHTML) + parseInt(actualBox[j].innerHTML);
+        // move the box to the empty box
+        actualBox[j].innerHTML = "";
+        // update the grid : grille
+        let myBox = {
+            value: caseLeft.innerHTML, lastInsert: false
+        };
+        grille[i][column] = Object.create(myBox);
         myBox = {
             value: "", lastInsert: false
         }
@@ -336,13 +394,13 @@ function moveBox(lines, line, i, j, acutalBoxes, emptyBox, hasMoved) {
     // else if there is an empty box
     else if (emptyBox !== null) {
         // move the box to the empty box
-        emptyBox.innerHTML = acutalBoxes[j].innerHTML;
-        acutalBoxes[j].innerHTML = "";
+        emptyBox.innerHTML = actualBox[j].innerHTML;
+        actualBox[j].innerHTML = "";
         // update the grid : grille
         let myBox = {
             value: emptyBox.innerHTML, lastInsert: false
         }
-        grille[line][j] = Object.create(myBox);
+        grille[i][column] = Object.create(myBox);
         myBox = {
             value: "", lastInsert: false
         }

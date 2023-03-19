@@ -27,8 +27,8 @@ window.onload = onLoad;
 // M413 - TD2
 
 function initSelect() {
-    // document.addEventListener('click', select);
-    document.addEventListener('click', select2);
+    document.addEventListener('click', select);
+    // document.addEventListener('click', select2);
 }
 
 function select(event) {
