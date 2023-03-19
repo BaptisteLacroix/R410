@@ -7,6 +7,12 @@ let coupNumber = 0;
 function onLoad() {
     console.log('Processus de chargement du document terminé…');
     init();
+    const boxes = document.querySelectorAll('.box');
+    boxes.forEach(box => {
+        box.addEventListener('animationend', () => {
+            box.classList.remove('move');
+        });
+    });
 }
 
 // Toute les ressources de la page sont complètement chargées.
@@ -33,10 +39,9 @@ function init() {
     insertValue(getNewValue(), getEmptyBox());
     insertValue(getNewValue(), getEmptyBox());
     // insertTestValue(2);
-
     displayGrid();
+    updateColor();
 }
-
 
 /**
  * It sets the value of the box at the given coordinate to the given value, and sets the lastInsert property of the box to
@@ -76,7 +81,6 @@ function insertTestValue(value) {
     grille[1][0].lastInsert = true;
 }
 
-
 /**
  * If the key pressed is the left arrow, move left. If the key pressed is the up arrow, move up. If the key pressed is the
  * right arrow, move right. If the key pressed is the down arrow, move down
@@ -87,18 +91,22 @@ function keyboardAction(event) {
         case 37:
             coupNumber++;
             moveLeft();
+            isVictory();
             break;
         case 38:
             coupNumber++;
             moveUp();
+            isVictory();
             break;
         case 39:
             coupNumber++;
             moveRight();
+            isVictory();
             break;
         case 40:
             coupNumber++;
             moveDown();
+            isVictory();
             break;
     }
 }
@@ -109,7 +117,7 @@ function keyboardAction(event) {
 function moveUp() {
     // get all lines that contains rows.
     let lines = document.getElementsByClassName('row');
-    let hasMoved = [false, false, false, false];
+    let hasMoved = new Array(grilleSize);
     // for each line
     for (let row = 0; row < grilleSize; row++) {
         // get all boxes of the line
@@ -117,6 +125,7 @@ function moveUp() {
         // for each box
         for (let column = 0; column < grilleSize; column++) {
             // if the box is not empty
+            // set time sleep for 1 second
             if (actualBox[column].innerHTML !== "") {
                 // Move the box to the most upper empty box or if there is a box with the same value, merge the boxes
                 // So get the coordinate of the most upper empty box or the box with the same value
@@ -138,7 +147,7 @@ function moveUp() {
 function moveDown() {
     // get all lines that contains rows.
     let lines = document.getElementsByClassName('row');
-    let hasMoved = [false, false, false, false];
+    let hasMoved = new Array(grilleSize);
     // for each line
     for (let row = grilleSize - 1; row >= 0; row--) {
         // get all boxes of the line
@@ -166,13 +175,13 @@ function moveDown() {
  */
 function moveLeft() {
     let lines = document.getElementsByClassName('row');
-    let hasMoved = [false, false, false, false];
+    let hasMoved = new Array(grilleSize);
     // for each line
     for (let row = 0; row < grilleSize; row++) {
         // get all boxes of the line
         let actualBox = lines[row].children;
         // for each box
-        for (let column = grilleSize - 1; column >= 0; column--) {
+        for (let column = 0; column < grilleSize; column++) {
             // if the box is not empty
             if (actualBox[column].innerHTML !== "") {
                 // Move the box to the most left empty box or if there is a box with the same value, merge the boxes
@@ -188,19 +197,18 @@ function moveLeft() {
     }
 }
 
-
 /**
  * It moves the boxes to the right
  */
 function moveRight() {
     let lines = document.getElementsByClassName('row');
-    let hasMoved = [false, false, false, false];
+    let hasMoved = new Array(grilleSize);
     // for each line
     for (let row = 0; row < grilleSize; row++) {
         // get all boxes of the line
         let actualBox = lines[row].children;
         // for each box
-        for (let column = 0; column < grilleSize; column++) {
+        for (let column = grilleSize - 1; column >= 0; column--) {
             // if the box is not empty
             if (actualBox[column].innerHTML !== "") {
                 // Move the box to the most right empty box or if there is a box with the same value, merge the boxes
@@ -291,31 +299,51 @@ function moveOrMergeBoxUpDown(actualRow, actualColumn, lineCoordinate, mostNearB
     let hasMoved = false;
     if (actualRow !== lineCoordinate) {
         if (mostNearBox.innerHTML === "") {
+            // Move the actual box to the most near empty box
+            // and move the most near box to the actual box
+            // Create an animation for the movement
+            // the animation from the actual box to the most near box
+            actualBox.animate([{top: actualBox.style.top}, {top: mostNearBox.style.top}], {
+                duration: 100, iterations: 1
+            });
+
+            let topActualBox = actualBox.style.top;
+            mostNearBox.animate([{top: mostNearBox.style.top}, {top: topActualBox}], {
+                duration: 100, iterations: 1
+            })
             mostNearBox.innerHTML = actualBox.innerHTML;
             actualBox.innerHTML = "";
             hasMoved = true;
             grille[lineCoordinate][actualColumn] = {
-                value: parseInt(mostNearBox.innerHTML),
-                lastInsert: false
+                value: parseInt(mostNearBox.innerHTML), lastInsert: false
             };
             grille[actualRow][actualColumn] = {
-                value: "",
-                lastInsert: false
+                value: "", lastInsert: false
             }
         } else if (mostNearBox.innerHTML === actualBox.innerHTML) {
+            // Move the actual box to the most near empty box
+            // and move the most near box to the actual box
+            // Create an animation for the movement
+            actualBox.animate([{top: actualBox.style.top}, {top: mostNearBox.style.top}], {
+                duration: 100, iterations: 1
+            });
+
+            let topActualBox = actualBox.style.top;
+            mostNearBox.animate([{top: mostNearBox.style.top}, {top: topActualBox}], {
+                duration: 100, iterations: 1
+            })
             mostNearBox.innerHTML = parseInt(mostNearBox.innerHTML) + parseInt(actualBox.innerHTML);
             actualBox.innerHTML = "";
             hasMoved = true;
             grille[lineCoordinate][actualColumn] = {
-                value: parseInt(mostNearBox.innerHTML),
-                lastInsert: false
+                value: parseInt(mostNearBox.innerHTML), lastInsert: false
             };
             grille[actualRow][actualColumn] = {
-                value: "",
-                lastInsert: false
+                value: "", lastInsert: false
             }
         }
     }
+    updateColor();
     return hasMoved;
 }
 
@@ -337,28 +365,24 @@ function moveOrMergeBoxLeftRight(actualRow, actualColumn, columnCoordinate, most
             actualBox.innerHTML = "";
             hasMoved = true;
             grille[actualRow][columnCoordinate] = {
-                value: parseInt(mostNearBox.innerHTML),
-                lastInsert: false
+                value: parseInt(mostNearBox.innerHTML), lastInsert: false
             };
             grille[actualRow][actualColumn] = {
-                value: "",
-                lastInsert: false
+                value: "", lastInsert: false
             }
         } else if (mostNearBox.innerHTML === actualBox.innerHTML) {
-            mostNearBox.innerHTML = parseInt(mostNearBox.innerHTML) +
-                parseInt(actualBox.innerHTML);
+            mostNearBox.innerHTML = parseInt(mostNearBox.innerHTML) + parseInt(actualBox.innerHTML);
             actualBox.innerHTML = "";
             hasMoved = true;
             grille[actualRow][columnCoordinate] = {
-                value: parseInt(mostNearBox.innerHTML),
-                lastInsert: false
+                value: parseInt(mostNearBox.innerHTML), lastInsert: false
             };
             grille[actualRow][actualColumn] = {
-                value: "",
-                lastInsert: false
+                value: "", lastInsert: false
             }
         }
     }
+    updateColor();
     return hasMoved;
 }
 
@@ -568,5 +592,82 @@ function isEmptyRow(row) {
  */
 
 function isEmptyColumn(column) {
+
+}
+
+/**
+ * Ajoutez une fonction isVictory() qui retourne vrai si le joueur a obtenu une case d’une
+ * valeur égale à 2048 pour la première fois.
+ * @returns {boolean}
+ */
+function isVictory() {
+    let lines = document.getElementsByClassName('row');
+    let victory = false;
+    // for each row
+    for (let i = 0; i < grilleSize; i++) {
+        // for each column
+        for (let j = 0; j < grilleSize; j++) {
+            if (lines[i].children[j].innerHTML === "2048") {
+                console.log("Victory");
+                victory = true;
+            }
+        }
+    }
+    return victory;
+}
+
+/**
+ * Ajoutez une fonction isDefeat() qui retourne vrai s’il n’y a plus de case vide dans la grille
+ * et si aucun des déplacements ne provoque une fusion.
+ * @returns {boolean}
+ */
+function isDefeat() {
+    let lines = document.getElementsByClassName('row');
+    let defeat = true;
+    // for each row
+    for (let i = 0; i < grilleSize; i++) {
+        // for each column
+        for (let j = 0; j < grilleSize; j++) {
+            if (lines[i].children[j].innerHTML === "") {
+                defeat = false;
+            }
+        }
+    }
+    return defeat;
+}
+
+/**
+ * Ajoutez une fonction, qui lors de la mise à jour de l’affichage, modifie la couleur (via le
+ * css) dans case en fonction de leur valeur.
+ */
+function updateColor() {
+    let lines = document.getElementsByClassName('row');
+    // for each row
+    for (let i = 0; i < grilleSize; i++) {
+        // for each column
+        for (let j = 0; j < grilleSize; j++) {
+            let box = lines[i].children[j];
+            box.classList.remove("color-2");
+            box.classList.remove("color-4");
+            box.classList.remove("color-8");
+            box.classList.remove("color-16");
+            box.classList.remove("color-32");
+            box.classList.remove("color-64");
+            box.classList.remove("color-128");
+            box.classList.remove("color-256");
+            box.classList.remove("color-512");
+            box.classList.remove("color-1024");
+            box.classList.remove("color-2048");
+            if (box.innerHTML !== "") {
+                box.classList.add("color-" + box.innerHTML);
+            }
+        }
+    }
+}
+
+/**
+ * Ajoutez une fonction qui permet d’animer le déplacement des cases.
+ */
+function animate() {
 
 }
