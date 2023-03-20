@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
 <meta charset="utf-8" />
 <meta name="author" content="Jean-Michel Bruneau - UCA - IUT - INFO" />
@@ -12,7 +12,19 @@
 	<!-- Your XHTML5 code goes here -->
 	<h1>Jeux 2048</h1>
 	<div id="container">
+		<div id="score">
+			<div id="score-title">Score</div>
+			<div id="score-value">0</div>
+		</div>
 		<div id="game">
+			<div id="game-won">
+				<div id="game-won-message">You Won!</div>
+				<div id="game-won-restart">Restart</div>
+			</div>
+			<div id="game-over">
+				<div id="game-over-message">Game Over!</div>
+				<div id="game-over-restart">Restart</div>
+			</div>
 			<!-- row 1 -->
 			<div class="row">
 				<div id="r1-c1" class="box"></div>

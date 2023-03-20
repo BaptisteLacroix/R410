@@ -2,15 +2,50 @@
 
 body {
     font-size: 2em;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    margin: 0px;
 }
 
 h1 {
     text-align: center;
     font-size: 3em;
+}
+
+p {
+    text-align: center;
+}
+
+#controls {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#controls > * {
+    margin: 0.5em;
+}
+
+button {
+    font-size: 0.5em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    border: none;
+    background-color: #1E90FF;
+    color: #fff;
+    cursor: pointer;
+}
+
+#controls input {
+    font-size: 0.5em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    border: none;
+    background-color: #1E90FF;
+    color: #fff;
+    cursor: pointer;
 }
 
 #container {
@@ -30,24 +65,24 @@ h1 {
 
 /* row 1 */
 #r1-c1 {
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
 }
 
 #r1-c2 {
-    top: 0px;
+    top: 0;
     left: 102px;
 }
 
 #r1-c3 {
-    top: 0px;
+    top: 0;
     left: 204px;
 }
 
 /* row 2 */
 #r2-c1 {
     top: 102px;
-    left: 0px;
+    left: 0;
 }
 
 #r2-c2 {
@@ -63,7 +98,7 @@ h1 {
 /* row 3 */
 #r3-c1 {
     top: 204px;
-    left: 0px;
+    left: 0;
 }
 
 #r3-c2 {
