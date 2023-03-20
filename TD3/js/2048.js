@@ -19,7 +19,7 @@ function onLoad() {
     init();
 }
 
-// Toute les ressources de la page sont complètement chargées.
+// Toutes les ressources de la page sont complètement chargées.
 window.onload = onLoad;
 
 

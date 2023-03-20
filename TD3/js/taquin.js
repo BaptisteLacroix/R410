@@ -1,34 +1,114 @@
 "use strict";
 
 let size = 3;
+let grid = [];
+let clicked = false;
+let solved = false;
 
+// Toutes les ressources de la page sont complètement chargées.
+window.onload = onLoad;
+
+/**
+ * It adds event listeners to the buttons and the input
+ */
 function onLoad() {
     console.log('Processus de chargement du document terminé…');
     document.getElementById('btnNewGame').addEventListener('click', function () {
+        solved = false;
+        clicked = false;
         init();
+    });
+    document.getElementById('btnReset').addEventListener('click', function () {
+        solved = false;
+        clicked = false;
+        reset();
     });
     document.getElementById('btnShuffle').addEventListener('click', function () {
         init();
     });
+    document.getElementById('btnSolve').addEventListener('click', function () {
+        if (clicked === false && solved === false) {
+            clicked = true;
+            solve();
+        }
+    });
     document.getElementById('size').addEventListener('input', function () {
         if (this.value >= 3 && this.value < 10) {
             size = this.value;
+            if (size > 3) {
+                // set button btnResolve disabled
+                document.getElementById('btnSolve').disabled = true;
+                // set opacity to 0.5
+                document.getElementById('btnSolve').style.opacity = '0.5';
+            } else if (size == 3) {
+                // set button btnResolve enabled
+                document.getElementById('btnSolve').disabled = false;
+                // set opacity to 1
+                document.getElementById('btnSolve').style.opacity = '1';
+            }
             init();
         }
     });
     init();
 }
 
-
-function init() {
-    // Remove all divs in the #game
-    let game = document.getElementById('game');
-    while (game.firstChild) {
-        game.removeChild(game.firstChild);
+function solve() {
+    let stringInitial = '';
+    for (const element of grid) {
+        stringInitial += element + ' ';
+    }
+    stringInitial = stringInitial.substring(0, stringInitial.length - 1);
+    let goal = '0 1 2 3 4 5 6 7 8';
+    // Send the stringInitiale and goal to the server and get the response
+    let jsonData = {
+        stringInitial: JSON.stringify(stringInitial), goal: JSON.stringify(goal)
     }
 
-    // Create a new grid
-    let grid = randomGrid();
+    return new Promise(() => {
+        $.ajax({
+            url: 'http://localhost:5000/a_star', type: 'GET', contentType: 'application/json', data: {
+                json: jsonData
+            }, success: function (response) {
+                console.log(response);
+                let index = grid.indexOf('0');
+                grid[index] = '';
+                let moves = response.split(',');
+                for (const move of moves) {
+                    // Get the empty box
+                    let emptyBox = document.getElementsByClassName('empty')[0];
+                    // get the box that the empty box will replace
+                    let box = null;
+                    switch (move) {
+                        case 'u':
+                            box = document.getElementById('r' + (parseInt(emptyBox.id.split('-')[0][1]) + 1) + '-c' + emptyBox.id.split('-')[1][1]);
+                            break;
+                        case 'd':
+                            box = document.getElementById('r' + (parseInt(emptyBox.id.split('-')[0][1]) - 1) + '-c' + emptyBox.id.split('-')[1][1]);
+                            break;
+                        case 'l':
+                            box = document.getElementById('r' + emptyBox.id.split('-')[0][1] + '-c' + (parseInt(emptyBox.id.split('-')[1][1]) + 1));
+                            break;
+                        case 'r':
+                            box = document.getElementById('r' + emptyBox.id.split('-')[0][1] + '-c' + (parseInt(emptyBox.id.split('-')[1][1]) - 1));
+                            break;
+                    }
+                    // for each box in all_boxes, we call the function selection and wait 1 second before loop again
+                    console.log(box);
+                    selection(box);
+                }
+                clicked = false;
+            }, error: function (error) {
+                console.log(error.responseText);
+            }
+        });
+    });
+}
+
+/**
+ * It creates a div for each box in the grid, and adds a click listener to each div
+ * @param game - The game div
+ */
+function setBoxPosition(game) {
     for (let i = 1; i <= size; i++) {
         for (let j = 1; j <= size; j++) {
             let div = document.createElement('div');
@@ -39,7 +119,7 @@ function init() {
             div.style.lineHeight = '100px';
             div.style.cursor = 'pointer';
             div.innerHTML = grid[(i - 1) * size + (j - 1)];
-            if (grid[(i - 1) * size + (j - 1)] === 0) {
+            if (grid[(i - 1) * size + (j - 1)] == 0) {
                 div.classList.add('empty');
                 div.innerHTML = '';
             }
@@ -53,16 +133,47 @@ function init() {
 
     let divs = document.getElementsByClassName('box');
     // Set a listener click on each divs
-    for (let i = 0; i < divs.length; i++) {
-        divs[i].addEventListener('click', function () {
-            selection(divs[i]);
+    for (const element of divs) {
+        document.addEventListener('click', function (event) {
+            if (event.target.id === element.id) {
+                selection(element);
+            }
         });
     }
 }
 
-// Toute les ressources de la page sont complètement chargées.
-window.onload = onLoad;
+/**
+ * It removes all the divs in the #game, then it creates a new grid by sending a GET request to the server, and finally it
+ * sets a listener click on each divs
+ */
+function init() {
+    // Remove all divs in the #game
+    let game = document.getElementById('game');
+    while (game.firstChild) {
+        game.removeChild(game.firstChild);
+    }
 
+    if (size > 3) {
+        grid = randomGrid();
+        setBoxPosition(game);
+    } else {
+        // Create a new grid
+        // wait for the response from the server
+        $.ajax({
+            url: 'http://localhost:5000/generate_puzzle',
+            type: 'GET',
+            contentType: 'application/json',
+            data: {},
+            success: function (response) {
+                grid = response[0].split(' ');
+                setBoxPosition(game);
+            },
+            error: function (error) {
+                console.log(error.responseText);
+            }
+        })
+    }
+}
 
 /**
  * Return a random grid, with the value 0 in the last box
@@ -88,7 +199,23 @@ function randomGrid() {
     return grid;
 }
 
+/**
+ * It removes all the divs in the #game, then creates new divs with the new grid, and finally adds a click listener to each
+ * div
+ */
+function reset() {
+    // Remove all divs in the #game
+    let game = document.getElementById('game');
+    while (game.firstChild) {
+        game.removeChild(game.firstChild);
+    }
+    setBoxPosition(game);
+}
 
+/**
+ * If the empty box is next to the clicked box, then swap the two boxes
+ * @param div - the box that was clicked
+ */
 function selection(div) {
     let emptyBox = document.getElementsByClassName('empty')[0];
     let emptyBoxId = emptyBox.id;
@@ -100,20 +227,32 @@ function selection(div) {
     let boxIdX = boxId.split('-')[0][1];
     let boxIdY = boxId.split('-')[1][1];
 
-    if ((emptyBoxIdX === boxIdX && (Math.abs(boxIdY - emptyBoxIdY) === 1)) ||
-        (emptyBoxIdY === boxIdY && (Math.abs(boxIdX - emptyBoxIdX) === 1))) {
+    if ((emptyBoxIdX === boxIdX && (Math.abs(boxIdY - emptyBoxIdY) === 1)) || (emptyBoxIdY === boxIdY && (Math.abs(boxIdX - emptyBoxIdX) === 1))) {
         animation(div, emptyBox);
         let temp = div.innerHTML;
         div.innerHTML = emptyBox.innerHTML;
         emptyBox.innerHTML = temp;
+
+        // update the grid array inversely
+        // from the grid get the position of the previous empty box
+        let indexBox = grid.indexOf(emptyBox.innerHTML);
+        let indexEmptyBox = grid.indexOf(div.innerHTML);
+        grid[indexBox] = "";
+        grid[indexEmptyBox] = emptyBox.innerHTML;
 
         // Set class .empty to the clicked box
         div.classList.add('empty');
         // And reove .empty from the empty box
         emptyBox.classList.remove('empty');
     }
+    solved = isSolve();
 }
 
+/**
+ * It takes two boxes, and animates the first one to the position of the second one
+ * @param actualBox - The box that is clicked.
+ * @param emptyBox - The box that is empty.
+ */
 function animation(actualBox, emptyBox) {
     let styleActualBox = window.getComputedStyle(actualBox);
     let styleMostNearBox = window.getComputedStyle(emptyBox);
@@ -123,121 +262,25 @@ function animation(actualBox, emptyBox) {
     let leftMostNearBox = styleMostNearBox.getPropertyValue('left');
 
     emptyBox.animate([{
-        top: topActualBox,
-        left: leftActualBox,
-        zIndex: 10
+        top: topActualBox, left: leftActualBox, zIndex: 10
     }, {
-        top: topMostNearBox,
-        left: leftMostNearBox,
-        zIndex: 10
+        top: topMostNearBox, left: leftMostNearBox, zIndex: 10
     }], {
         duration: 200, iterations: 1
     });
 }
 
-
-function manhattanDistance(grid, size) {
-    let distance = 0;
-
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-            let value = grid[i * size + j];
-            if (value !== 0) {
-                let targetX = Math.floor((value - 1) / size);
-                let targetY = (value - 1) % size;
-                distance += Math.abs(i - targetX) + Math.abs(j - targetY);
-            }
+/**
+ * If the innerHTML of each div is equal to the corresponding value in the grid array, then the puzzle is solved.
+ * @returns A boolean value.
+ */
+function isSolve() {
+    let divs = document.getElementsByClassName('box');
+    let solved = true;
+    for (let i = 0; i < divs.length; i++) {
+        if (divs[i].innerHTML != grid[i]) {
+            solved = false;
         }
     }
-
-    return distance;
-}
-
-function isSolved(grid, size) {
-    for (let i = 0; i < size * size - 1; i++) {
-        if (grid[i] !== i + 1) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function solve(grid, size) {
-    let openSet = [{
-        grid: grid,
-        g: 0,
-        h: manhattanDistance(grid, size)
-    }];
-
-    while (openSet.length > 0) {
-        let current
-// Trouver l'état avec le coût le plus bas dans l'ensemble ouvert
-        let currentIndex = 0;
-        for (let i = 1; i < openSet.length; i++) {
-            if (openSet[i].g + openSet[i].h < openSet[currentIndex].g + openSet[currentIndex].h) {
-                currentIndex = i;
-            }
-        }
-        let currentState = openSet[currentIndex];
-
-        // Vérifier si l'état actuel est résolu
-        if (isSolved(currentState.grid, size)) {
-            console.log('Solved!');
-            return currentState.grid;
-        }
-
-        // Retirer l'état actuel de l'ensemble ouvert et le traiter
-        openSet.splice(currentIndex, 1);
-
-        // Trouver la position de la case vide
-        let emptyIndex = currentState.grid.indexOf(0);
-
-        // Les mouvements possibles
-        let moves = [
-            {x: -1, y: 0},
-            {x: 1, y: 0},
-            {x: 0, y: -1},
-            {x: 0, y: 1}
-        ];
-
-        // Parcourir les mouvements possibles
-        for (let move of moves) {
-            let emptyX = Math.floor(emptyIndex / size);
-            let emptyY = emptyIndex % size;
-            let newX = emptyX + move.x;
-            let newY = emptyY + move.y;
-
-            // Vérifier si le mouvement est valide
-            if (newX >= 0 && newX < size && newY >= 0 && newY < size) {
-                // Créer une copie de la grille actuelle et échanger la case vide avec la case adjacente
-                let newGrid = currentState.grid.slice();
-                let newIndex = newX * size + newY;
-                newGrid[emptyIndex] = newGrid[newIndex];
-                newGrid[newIndex] = 0;
-
-                // Vérifier si la nouvelle grille existe déjà dans l'ensemble ouvert
-                let foundInOpenSet = false;
-                for (let state of openSet) {
-                    if (state.grid.every((value, index) => value === newGrid[index])) {
-                        foundInOpenSet = true;
-                        break;
-                    }
-                }
-
-                // Ajouter la nouvelle grille à l'ensemble ouvert si elle n'y est pas déjà
-                if (!foundInOpenSet) {
-                    openSet.push({
-                        grid: newGrid,
-                        g: currentState.g + 1,
-                        h: manhattanDistance(newGrid, size)
-                    });
-                }
-            }
-        }
-    }
-
-    // Aucune solution trouvée
-    console.log('No solution found');
-    return null;
+    return solved;
 }
