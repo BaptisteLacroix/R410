@@ -28,7 +28,7 @@ p {
     margin: 0.5em;
 }
 
-button {
+#controls button {
     font-size: 0.5em;
     padding: 0.5em;
     border-radius: 0.5em;
@@ -55,7 +55,7 @@ button {
 #game {
     border-style: solid;
     border-width: 1px;
-    background-color: #00008B;
+    /*background-color: #00008B;*/
     position: absolute;
     left: 50%;
     transform: translate(-50%, 0%);
@@ -116,7 +116,7 @@ button {
 .box {
     border-style: solid;
     border-width: 1px;
-    background-color: #1E90FF;
+    /*background-color: #1E90FF;*/
     margin: 0;
     padding: 0;
     width: 100px;
@@ -137,7 +137,21 @@ button {
 
 /* empty box */
 .empty {
-    background-color: #00008B;
+    /*background-color: #00008B;*/
     z-index: 0;
     border: none;
+}
+
+#victory-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 306px;
+    height: 306px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-align: center;
+    z-index: 999;
+    display: none;
 }

@@ -32,7 +32,7 @@ class InputError(Error):
 
 class EightPuzzle:
 
-    def __init__(self, str):
+    def __init__(self, string, size=3):
         """
         It takes a string as input, and if the string is formatted correctly,
         it creates a new Puzzle object with the state
@@ -40,13 +40,29 @@ class EightPuzzle:
 
         :param str: The string that is being passed in
         """
-        pttn = re.compile("(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)")
-        result = pttn.match(str)
+        # pttn = re.compile("(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)\s(\d)") for 3x3
+        # result = pttn.match(string)
+        # do the pattern dynamically
+        self.size = size
+        pttn = re.compile("(\d{1,2})")
+        for i in range(self.size * self.size - 1):
+            if i > 8:
+                pttn = re.compile(pttn.pattern + "\s(\d{1,2})")
+            else:
+                pttn = re.compile(pttn.pattern + "\s(\d{1,2})")
+
+        result = pttn.match(string)
+
         if result is not None:
             s = result.groups()
-            self.state = [[int(s[0]), int(s[1]), int(s[2])],
-                          [int(s[3]), int(s[4]), int(s[5])],
-                          [int(s[6]), int(s[7]), int(s[8])]]
+            # self.state = [[int(s[0]), int(s[1]), int(s[2])], [int(s[3]), int(s[4]), int(s[5])], [int(s[6]), int(s[7]), int(s[8])]]
+            # create the state dynamically
+            self.state = []
+            for i in range(size):
+                row = []
+                for j in range(size):
+                    row.append(int(s[i * size + j]))
+                self.state.append(row)
         else:
             raise InputError("Improperly formatted 8-puzzle")
 
@@ -57,8 +73,8 @@ class EightPuzzle:
         """
 
         s = ''
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.size):
+            for j in range(0, self.size):
                 s += str(self.state[i][j]) + ' '
         return s
 
@@ -99,10 +115,10 @@ class EightPuzzle:
         """
         uid = 0
         mult = 1
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.size):
+            for j in range(0, self.size):
                 uid += self.state[i][j] * mult
-                mult *= 9
+                mult *= self.size * self.size
         return uid
 
     def tile_switches_remaining(self, goal):
@@ -113,8 +129,8 @@ class EightPuzzle:
         :return: The number of tiles that are not in the correct position.
         """
         sum = 0
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.size):
+            for j in range(0, self.size):
                 if self.state[i][j] != goal.state[i][j]:
                     sum += 1
         return sum
@@ -129,11 +145,11 @@ class EightPuzzle:
         :return: The sum of the manhatten distances of each tile from its goal position.
         """
         sum = 0
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.size):
+            for j in range(0, self.size):
                 tile = self.state[i][j]
-                for m in range(0, 3):
-                    for n in range(0, 3):
+                for m in range(0, self.size):
+                    for n in range(0, self.size):
                         if tile == goal.state[m][n]:
                             sum += abs(i - m) + abs(j - n)
         return sum
@@ -146,7 +162,7 @@ class EightPuzzle:
         :return: A list of tuples. Each tuple contains a copy of the current state
         and a string representing the direction
         of the move.
-        """
+
         list = []
         idx = self.get_blank_index()
         x = idx[0]
@@ -172,18 +188,45 @@ class EightPuzzle:
             u.state[y + 1][x] = 0
             list.append((u, 'u'))
         return list
+        """
+        list = []
+        idx = self.get_blank_index()
+        x = idx[0]
+        y = idx[1]
+        size = len(self.state)
+        if x > 0:
+            r = copy.deepcopy(self)
+            r.state[y][x] = r.state[y][x - 1]
+            r.state[y][x - 1] = 0
+            list.append((r, 'r'))
+        if x < (size - 1):
+            l = copy.deepcopy(self)
+            l.state[y][x] = l.state[y][x + 1]
+            l.state[y][x + 1] = 0
+            list.append((l, 'l'))
+        if y > 0:
+            d = copy.deepcopy(self)
+            d.state[y][x] = d.state[y - 1][x]
+            d.state[y - 1][x] = 0
+            list.append((d, 'd'))
+        if y < (size - 1):
+            u = copy.deepcopy(self)
+            u.state[y][x] = u.state[y + 1][x]
+            u.state[y + 1][x] = 0
+            list.append((u, 'u'))
+        return list
 
     def get_blank_index(self):
         """
         It returns the x and y coordinates of the blank tile in the puzzle
         :return: The x and y coordinates of the blank space.
         """
-        for i in range(0, 3):
-            for j in range(0, 3):
+        for i in range(0, self.size):
+            for j in range(0, self.size):
                 if self.state[i][j] == 0:
                     x = j
                     y = i
-        return (x, y)
+        return x, y
 
     def a_star(self, goal, heuristic, output):
         """
@@ -203,7 +246,7 @@ class EightPuzzle:
         :return: The path from the start to the goal.
         """
         closed_set = set()
-        open_set = set([self])
+        open_set = {self}
         came_from = {}
 
         g_score = {self: 0}
@@ -211,7 +254,6 @@ class EightPuzzle:
 
         count = 0  # combien de configuration a-t-on développé ?
         while len(open_set) != 0:
-            # print (len(open_set),len(closed_set))
             current = None
             for node in open_set:
                 if current is None or f_score[node] < f_score[current]:
@@ -316,6 +358,7 @@ CORS(app)  # add cors so you don't get a cors error
 
 @app.route('/a_star', methods=['GET', 'POST'])
 def a_star():
+    print("a_star")
     url = request.get_data  # = <bound method Request.get_data of <Request 'http://localhost:5000/a_star?json%5BstringInitial%5D=%224%201%203%205%202%208%206%207%200%22&json%5Bgoal%5D=%220%201%202%203%204%205%206%207%208%22' [GET]>>
     # transfomr url as string
     url = str(url)
@@ -324,16 +367,15 @@ def a_star():
     # get the stringInitial and delete all the %20
     initial = url[0].split("=")[1].replace("%20", " ").replace("%22", "")
     # get the goal and delete all the %20 Replace all values different from 0-9 and a-z
-    goal = url[1].split("=")[1].replace("%20", " ").replace("%22", "").replace("' [GET]>>", "")
+    goal = url[1].split("=")[1].replace("%20", " ").replace("%22", "")
+    size = int(url[2].split("=")[1].replace("%22", "").replace("' [GET]>>", ""))
 
     # create the initial state
-    initial = EightPuzzle(initial)
-    goal = EightPuzzle(goal)
+    initial = EightPuzzle(initial, size)
+    goal = EightPuzzle(goal, size)
 
     heuristic = EightPuzzle.manhatten_distance
     output = EightPuzzle.action_sequence
-    print(initial)
-    print(goal)
     result = initial.a_star(goal, heuristic, output)
     print(result)
     return jsonify(result)
@@ -346,7 +388,14 @@ def generate_puzzle() -> (str, str):
     :return:
     """
     # code pour 50 permutations aléatoires
-    initial, goal = EightPuzzle('0 1 2 3 4 5 6 7 8'), EightPuzzle('0 1 2 3 4 5 6 7 8')
+    size = int(str(request.get_data).split("=")[1].replace("%22", "").replace("' [GET]>>", ""))
+
+    intitialString = ""
+    for i in range(size * size):
+        intitialString += str(i) + " "
+    initialString = intitialString[:-1]
+
+    initial, goal = EightPuzzle(initialString, size), EightPuzzle(initialString, size)
     for _ in range(50):
         initial = random.choice(initial.neighbors())[0]
     return jsonify(initial.__str__(), goal.__str__())
