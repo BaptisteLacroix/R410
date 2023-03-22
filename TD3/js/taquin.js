@@ -3,7 +3,7 @@
 let size = 3;
 let defaultGrid = [];
 let grid = [];
-let images = ["chats", "croco", "ecureuil", "fox", "ours", "ourson_blanc", "panda"];
+let images = ["paulsinnah", "chats", "croco", "ecureuil", "fox", "ours", "ourson_blanc", "panda"];
 let actualImage = 1;
 let clicked = false;
 let solved = false;
