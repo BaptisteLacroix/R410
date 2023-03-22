@@ -110,16 +110,25 @@ function solve() {
             }
             console.log(solved);
             if (solved) {
-                console.log('Victory');
-                victory_div.style.display = 'block';
-                victory_div.style.width = size * 102 + 'px';
-                victory_div.style.height = size * 102 + 'px';
+                victoryScreen();
             }
             clicked = false;
         }, error: function (error) {
             console.log(error.responseText);
         }
     });
+}
+
+function victoryScreen() {
+    console.log('Victory');
+    //victory_div.style.display = 'block';
+    victory_div.style.width = size * 102 + 'px';
+    victory_div.style.height = size * 102 + 'px';
+
+    let boxes = document.getElementsByClassName('box');
+    for (const box of boxes) {
+        box.style.color = 'transparent';
+    }
 }
 
 /**
@@ -138,6 +147,9 @@ function setBoxPosition(game, actualGrid) {
             div.style.lineHeight = '100px';
             div.style.cursor = 'pointer';
             div.innerHTML = actualGrid[(i - 1) * size + (j - 1)];
+            // div.style.color = 'transparent';
+            div.style.color = "white"
+            div.style.fontSize = '50px';
             if (actualGrid[(i - 1) * size + (j - 1)] == 0) {
                 div.classList.add('empty');
                 div.innerHTML = '';
@@ -244,8 +256,11 @@ function selection(div) {
     if ((emptyBoxIdX === boxIdX && (Math.abs(boxIdY - emptyBoxIdY) === 1)) || (emptyBoxIdY === boxIdY && (Math.abs(boxIdX - emptyBoxIdX) === 1))) {
         animation(div, emptyBox);
         let temp = div.innerHTML;
+        let tempBackgroundImage = div.style.backgroundImage;
         div.innerHTML = emptyBox.innerHTML;
+        div.style.backgroundImage = emptyBox.style.backgroundImage;
         emptyBox.innerHTML = temp;
+        emptyBox.style.backgroundImage = tempBackgroundImage;
 
         // update the grid array inversely
         // from the grid get the position of the previous empty box
@@ -317,28 +332,35 @@ function isSolve() {
 function setImage(imagePath, size) {
     let image = new Image();
     image.src = imagePath;
-    let game = document.getElementById('game');
-    // Set as background of game an image with the size of the grid
-    game.style.backgroundImage = 'url(' + imagePath + ')';
-    game.style.backgroundSize = size * 102 + 'px ' + size * 102 + 'px';
-    // set background image opacity to 0.5
-    //game.style.opacity = 0.7;
     image.onload = function () {
         // get only the image with the width and height of the grid
+        // let game = document.getElementById('game');
+        // Set as background of game an image with the size of the grid
+        // game.style.backgroundImage = 'url(' + imagePath + ')';
+        // game.style.backgroundSize = size * 102 + 'px ' + size * 102 + 'px';
+        // set background image opacity to 0.5
         let canvas = document.createElement('canvas');
         canvas.width = size * 102;
         canvas.height = size * 102;
         let ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0, size * 102, size * 102);
+        let count = 0;
         for (let row = 0; row < size; row++) {
             for (let col = 0; col < size; col++) {
                 let tempCanvas = document.createElement('canvas');
                 tempCanvas.width = size * 102;
                 tempCanvas.height = size * 102;
                 let tempCtx = tempCanvas.getContext('2d');
-                tempCtx.drawImage(image, 0, 0, row * 102, col * 102);
-                let box = document.getElementById('r' + (row + 1) + '-c' + (col + 1));
-                box.style.backgroundImage = 'url(' + tempCanvas.toDataURL() + ')';
+                tempCtx.drawImage(canvas, col * 102, row * 102, 102, 102, 0, 0, 102, 102);
+                let box = document.getElementsByClassName('box');
+                for (const element of box) {
+                    if (element.innerHTML == count) {
+                        element.style.backgroundImage = "url(" + tempCanvas.toDataURL() + ")";
+                    } else if (element.innerHTML === "" && count === 0) {
+                        element.style.backgroundImage = "url(" + tempCanvas.toDataURL() + ")";
+                    }
+                }
+                count++;
             }
         }
     }

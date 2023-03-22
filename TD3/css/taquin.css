@@ -138,8 +138,7 @@ p {
 /* empty box */
 .empty {
     /*background-color: #00008B;*/
-    z-index: 0;
-    border: none;
+    z-index: 10;
 }
 
 #victory-message {

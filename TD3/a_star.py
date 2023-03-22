@@ -251,7 +251,6 @@ class EightPuzzle:
 
         g_score = {self: 0}
         f_score = {self: g_score[self] + heuristic(self, goal)}
-
         count = 0  # combien de configuration a-t-on développé ?
         while len(open_set) != 0:
             current = None
@@ -259,10 +258,13 @@ class EightPuzzle:
                 if current is None or f_score[node] < f_score[current]:
                     current = node
             if current == goal:
+                # clear memory like garbage collector
+                del closed_set
                 return output(self, came_from, current)
 
             count += 1
-            print(count, len(closed_set), "Developing: ", current)
+            if (count % 200 == 0):
+                print(count, len(closed_set), "Developing: ", current)
             open_set.remove(current)
             closed_set.add(current)
             #             print ("Closed set:")
@@ -284,7 +286,8 @@ class EightPuzzle:
                     if neighbor not in open_set:
                         open_set.add(neighbor)
         #                        print ("->", neighbor)
-
+        # clear memory like garbage collector
+        del closed_set
         return "nil"
 
     def action_sequence(self, came_from, current_node):
