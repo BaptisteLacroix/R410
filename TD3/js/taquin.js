@@ -18,6 +18,22 @@ window.onload = onLoad;
  */
 function onLoad() {
     console.log('Processus de chargement du document terminé…');
+    // create the select element for teh images
+    let select = document.getElementById('image');
+    for (let i = 1; i <= images.length; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.innerHTML = images[i - 1];
+        select.appendChild(option);
+    }
+    // add the event listener to the select element
+    select.addEventListener('change', function () {
+        actualImage = this.value;
+        clicked = false;
+        solved = false;
+        victory_div.style.display = 'none';
+        init();
+    });
     document.getElementById('btnNewGame').addEventListener('click', function () {
         solved = false;
         clicked = false;
@@ -28,7 +44,6 @@ function onLoad() {
         solved = false;
         clicked = false;
         victory_div.style.display = 'none';
-        console.log('Reset');
         reset();
     });
     document.getElementById('btnShuffle').addEventListener('click', function () {
@@ -53,27 +68,6 @@ function onLoad() {
         }
     });
     generateSelectImage();
-}
-
-function generateSelectImage() {
-    // create the select element for teh images
-    let select = document.getElementById('image');
-    for (let i = 1; i <= images.length; i++) {
-        let option = document.createElement('option');
-        option.value = i;
-        option.innerHTML = images[i - 1];
-        select.appendChild(option);
-    }
-
-    // add the event listener to the select element
-    select.addEventListener('change', function () {
-        actualImage = this.value;
-        clicked = false;
-        solved = false;
-        victory_div.style.display = 'none';
-        init();
-    });
-    init();
 }
 
 function moveBox(move) {
@@ -188,10 +182,8 @@ function setBoxPosition(game, actualGrid) {
     let divs = document.getElementsByClassName('box');
     // Set a listener click on each divs
     for (const element of divs) {
-        document.addEventListener('click', function (event) {
-            if (event.target.id === element.id) {
-                selection(element);
-            }
+        element.addEventListener('click', function () {
+            selection(element);
         });
     }
 
@@ -203,11 +195,8 @@ function setBoxPosition(game, actualGrid) {
  * sets a listener click on each divs
  */
 function init() {
-    // Remove all divs in the #game
     let game = document.getElementById('game');
-    while (game.firstChild) {
-        game.removeChild(game.firstChild);
-    }
+    removeAllBoxes();
     // Create a new grid
     // wait for the response from the server
     $.ajax({
@@ -215,14 +204,20 @@ function init() {
             size: JSON.stringify(size)
         }, success: function (response) {
             grid = response[0].split(' ');
-            defaultGrid = grid;
+            // create a copy of the grid
+            for (let i = 0; i < grid.length; i++) {
+                defaultGrid[i] = grid[i];
+            }
             setBoxPosition(game, grid);
             document.getElementById('btnSolve').disabled = false;
             document.getElementById('btnSolve').style.opacity = '1';
         }, error: function (error) {
             console.log(error.responseText);
             grid = randomGrid();
-            defaultGrid = grid;
+            // create a copy of the grid
+            for (let i = 0; i < grid.length; i++) {
+                defaultGrid[i] = grid[i];
+            }
             setBoxPosition(game, grid);
             document.getElementById('btnSolve').disabled = true;
             document.getElementById('btnSolve').style.opacity = '0.5';
@@ -255,16 +250,36 @@ function randomGrid() {
 }
 
 /**
- * It removes all the divs in the #game, then creates new divs with the new grid, and finally adds a click listener to each
- * div
+ * It removes all the divs in the #game, then creates new divs with the new grid, and finally
+ * adds a click listener to each div and it sets the image of the boxes
  */
 function reset() {
-    // Remove all divs in the #game
+    let game = document.getElementById('game');
+    removeAllBoxes();
+    for (let i = 0; i < defaultGrid.length; i++) {
+        grid[i] = defaultGrid[i];
+    }
+    setBoxPosition(game, grid);
+}
+
+/**
+ * It removes all the divs in the #game, then creates new divs with the new grid,
+ * and finally adds a click listener to each div and it sets the image of the boxes
+ */
+function generateSelectImage() {
+    removeAllBoxes();
+    grid = defaultGrid;
+    init();
+}
+
+/**
+ * It removes all the divs in the #game
+ */
+function removeAllBoxes() {
     let game = document.getElementById('game');
     while (game.firstChild) {
         game.removeChild(game.firstChild);
     }
-    setBoxPosition(game, defaultGrid);
 }
 
 
@@ -298,6 +313,8 @@ function selection(div) {
         let indexEmptyBox = grid.indexOf(div.innerHTML);
         grid[indexBox] = "";
         grid[indexEmptyBox] = emptyBox.innerHTML;
+        console.log("grid : " + grid);
+        console.log("default grid : " + defaultGrid);
 
         // Set class .empty to the clicked box
         div.classList.add('empty');
