@@ -3,6 +3,8 @@
 let size = 3;
 let defaultGrid = [];
 let grid = [];
+let images = ["chats", "croco", "ecureuil", "fox", "ours", "ourson_blanc", "panda"];
+let actualImage = 1;
 let clicked = false;
 let solved = false;
 let victory_div = document.getElementById('victory-message');
@@ -20,7 +22,7 @@ function onLoad() {
         solved = false;
         clicked = false;
         victory_div.style.display = 'none';
-        init();
+        generateSelectImage();
     });
     document.getElementById('btnReset').addEventListener('click', function () {
         solved = false;
@@ -33,7 +35,7 @@ function onLoad() {
         victory_div.style.display = 'none';
         solved = false;
         clicked = false;
-        init();
+        generateSelectImage();
     });
     document.getElementById('btnSolve').addEventListener('click', function () {
         if (clicked === false && solved === false) {
@@ -47,8 +49,29 @@ function onLoad() {
             solved = false;
             victory_div.style.display = 'none';
             size = this.value;
-            init();
+            generateSelectImage();
         }
+    });
+    generateSelectImage();
+}
+
+function generateSelectImage() {
+    // create the select element for teh images
+    let select = document.getElementById('image');
+    for (let i = 1; i <= images.length; i++) {
+        let option = document.createElement('option');
+        option.value = i;
+        option.innerHTML = images[i - 1];
+        select.appendChild(option);
+    }
+
+    // add the event listener to the select element
+    select.addEventListener('change', function () {
+        actualImage = this.value;
+        clicked = false;
+        solved = false;
+        victory_div.style.display = 'none';
+        init();
     });
     init();
 }
@@ -172,7 +195,7 @@ function setBoxPosition(game, actualGrid) {
         });
     }
 
-    setImage("./assets/images/croco.jpg", size);
+    setImage("./assets/images/" + images[actualImage - 1] + ".jpg", size);
 }
 
 /**
@@ -194,8 +217,15 @@ function init() {
             grid = response[0].split(' ');
             defaultGrid = grid;
             setBoxPosition(game, grid);
+            document.getElementById('btnSolve').disabled = false;
+            document.getElementById('btnSolve').style.opacity = '1';
         }, error: function (error) {
             console.log(error.responseText);
+            grid = randomGrid();
+            defaultGrid = grid;
+            setBoxPosition(game, grid);
+            document.getElementById('btnSolve').disabled = true;
+            document.getElementById('btnSolve').style.opacity = '0.5';
         }
     })
 }
@@ -275,7 +305,6 @@ function selection(div) {
         emptyBox.classList.remove('empty');
     }
     solved = isSolve();
-    console.log(solved);
 }
 
 /**
