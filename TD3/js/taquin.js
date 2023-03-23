@@ -5,6 +5,7 @@ let defaultGrid = [];
 let grid = [];
 let images = ["paulsinnah", "chats", "croco", "ecureuil", "fox", "ours", "ourson_blanc", "panda"];
 let actualImage = 1;
+let moves = 0;
 let clicked = false;
 let solved = false;
 let victory_div = document.getElementById('victory-message');
@@ -28,6 +29,7 @@ function onLoad() {
     }
     // add the event listener to the select element
     select.addEventListener('change', function () {
+        moves = 0;
         actualImage = this.value;
         clicked = false;
         solved = false;
@@ -35,18 +37,21 @@ function onLoad() {
         init();
     });
     document.getElementById('btnNewGame').addEventListener('click', function () {
+        moves = 0;
         solved = false;
         clicked = false;
         victory_div.style.display = 'none';
         generateSelectImage();
     });
     document.getElementById('btnReset').addEventListener('click', function () {
+        moves = 0;
         solved = false;
         clicked = false;
         victory_div.style.display = 'none';
         reset();
     });
     document.getElementById('btnShuffle').addEventListener('click', function () {
+        moves = 0;
         victory_div.style.display = 'none';
         solved = false;
         clicked = false;
@@ -54,12 +59,15 @@ function onLoad() {
     });
     document.getElementById('btnSolve').addEventListener('click', function () {
         if (clicked === false && solved === false) {
+            reset();
+            moves = 0;
             clicked = true;
             solve();
         }
     });
     document.getElementById('size').addEventListener('input', function () {
         if (this.value >= 3 && this.value < 10) {
+            moves = 0;
             clicked = false;
             solved = false;
             victory_div.style.display = 'none';
@@ -109,6 +117,8 @@ function solve() {
     }
     goal = goal.substring(0, goal.length - 1);
     // Send the stringInitiale and goal to the server and get the response
+    console.log(stringInitial);
+    console.log(goal);
     let jsonData = {
         stringInitial: JSON.stringify(stringInitial), goal: JSON.stringify(goal), size: JSON.stringify(size)
     }
@@ -184,9 +194,13 @@ function setBoxPosition(game, actualGrid) {
     for (const element of divs) {
         element.addEventListener('click', function () {
             selection(element);
+            console.log("solved : " + solved);
+            console.log("grid : " + grid);
+            if (solved) {
+                victoryScreen();
+            }
         });
     }
-
     setImage("./assets/images/" + images[actualImage - 1] + ".jpg", size);
 }
 
@@ -204,6 +218,7 @@ function init() {
             size: JSON.stringify(size)
         }, success: function (response) {
             grid = response[0].split(' ');
+            console.log(grid);
             // create a copy of the grid
             for (let i = 0; i < grid.length; i++) {
                 defaultGrid[i] = grid[i];
@@ -221,6 +236,8 @@ function init() {
             setBoxPosition(game, grid);
             document.getElementById('btnSolve').disabled = true;
             document.getElementById('btnSolve').style.opacity = '0.5';
+            let index = grid.indexOf('0');
+            grid[index] = '';
         }
     })
 }
@@ -288,6 +305,14 @@ function removeAllBoxes() {
  * @param div - the box that was clicked
  */
 function selection(div) {
+    if (moves === 0) {
+        let index = grid.indexOf('0');
+        if (index !== -1) {
+            console.log(index)
+            grid[index] = '';
+        }
+    }
+    console.log(grid)
     let emptyBox = document.getElementsByClassName('empty')[0];
     let emptyBoxId = emptyBox.id;
 
@@ -311,10 +336,9 @@ function selection(div) {
         // from the grid get the position of the previous empty box
         let indexBox = grid.indexOf(emptyBox.innerHTML);
         let indexEmptyBox = grid.indexOf(div.innerHTML);
+        moves++;
         grid[indexBox] = "";
         grid[indexEmptyBox] = emptyBox.innerHTML;
-        console.log("grid : " + grid);
-        console.log("default grid : " + defaultGrid);
 
         // Set class .empty to the clicked box
         div.classList.add('empty');
@@ -361,13 +385,12 @@ function animation(actualBox, emptyBox) {
  */
 function isSolve() {
     let divs = document.getElementsByClassName('box');
-    let solved = true;
     for (let i = 0; i < divs.length; i++) {
-        if (divs[i].innerHTML != grid[i]) {
-            solved = false;
+        if (divs[i].innerHTML !== grid[i]) {
+            return false;
         }
     }
-    return solved;
+    return true;
 }
 
 /**

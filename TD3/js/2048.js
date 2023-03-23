@@ -7,7 +7,7 @@ let score = 0;
 let isDelayed = false;
 let aiInterval = null;
 // TODO : add input for this
-let depthMax = 6;
+let depthMax = 8;
 let speed = 1000;
 // Toutes les ressources de la page sont complètement chargées.
 window.onload = onLoad;
@@ -50,7 +50,7 @@ function onLoad() {
                     moveLeft();
                     break;
             }
-        }, 100);
+        }, 500);
     });
     init();
 }
@@ -729,7 +729,6 @@ function animate(actualBox, mostNearBox) {
     let leftActualBox = styleActualBox.getPropertyValue('left');
     let topMostNearBox = styleMostNearBox.getPropertyValue('top');
     let leftMostNearBox = styleMostNearBox.getPropertyValue('left');
-
     mostNearBox.animate([{
         top: topActualBox, left: leftActualBox, zIndex: 10
     }, {
