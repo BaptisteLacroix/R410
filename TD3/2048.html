@@ -1,59 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="author" content="Jean-Michel Bruneau - UCA - IUT - INFO" />
-<title>M413 - TD 3 - Jeux 2048</title>
-<link href="assets/favicon.ico" rel="icon" type="image/x-icon" />
-<link rel="stylesheet" type="text/css" href="css/2048.css" />
-<script defer="defer" src="js/2048.js"></script>
+    <meta charset="utf-8"/>
+    <meta name="author" content="Jean-Michel Bruneau - UCA - IUT - INFO"/>
+    <title>M413 - TD 3 - Jeux 2048</title>
+    <link href="assets/favicon.ico" rel="icon" type="image/x-icon"/>
+    <link rel="stylesheet" type="text/css" href="css/2048.css"/>
+    <script defer="defer" src="js/2048.js"></script>
 </head>
 <body>
-	<!-- Your XHTML5 code goes here -->
-	<h1>Jeux 2048</h1>
-	<div id="container">
-		<div id="score">
-			<div id="score-title">Score</div>
-			<div id="score-value">0</div>
-		</div>
-		<div id="game">
-			<div id="game-won">
-				<div id="game-won-message">You Won!</div>
-				<div id="game-won-restart">Restart</div>
-			</div>
-			<div id="game-over">
-				<div id="game-over-message">Game Over!</div>
-				<div id="game-over-restart">Restart</div>
-			</div>
-			<!-- row 1 -->
-			<div class="row">
-				<div id="r1-c1" class="box"></div>
-				<div id="r1-c2" class="box"></div>
-				<div id="r1-c3" class="box"></div>
-				<div id="r1-c4" class="box"></div>
-			</div>
-			<!-- row 2 -->
-			<div class="row">
-				<div id="r2-c1" class="box"></div>
-				<div id="r2-c2" class="box"></div>
-				<div id="r2-c3" class="box"></div>
-				<div id="r2-c4" class="box"></div>
-			</div>
-			<!-- row 3 -->
-			<div class="row">
-				<div id="r3-c1" class="box"></div>
-				<div id="r3-c2" class="box"></div>
-				<div id="r3-c3" class="box"></div>
-				<div id="r3-c4" class="box"></div>
-			</div>
-			<!-- row 4 -->
-			<div class="row">
-				<div id="r4-c1" class="box"></div>
-				<div id="r4-c2" class="box"></div>
-				<div id="r4-c3" class="box"></div>
-				<div id="r4-c4" class="box"></div>
-			</div>
-		</div>
-	</div>
+<!-- Your XHTML5 code goes here -->
+<h1>Jeux 2048</h1>
+<div id="container">
+    <div id="instructions">
+        <div id="instructions-title">Instructions</div>
+        <div id="instructions-content">
+            <p>Use your arrow keys to move the tiles. When two tiles with the same number touch, they merge into
+                one!</p>
+        </div>
+    </div>
+    <div id="ai">
+        <p>
+            Start AI :
+            <button id="ai-start">Start AI</button>
+        </p>
+    </div>
+    <div id="score">
+        <div id="score-title">Score</div>
+        <div id="score-value">0</div>
+    </div>
+    <div id="game">
+        <div id="game-won">
+            <div id="game-won-message">You Won!</div>
+            <div id="game-won-restart">Restart</div>
+        </div>
+        <div id="game-over">
+            <div id="game-over-message">Game Over!</div>
+            <div id="game-over-restart">Restart</div>
+        </div>
+        <!-- row 1 -->
+        <div class="row">
+            <div id="r1-c1" class="box"></div>
+            <div id="r1-c2" class="box"></div>
+            <div id="r1-c3" class="box"></div>
+            <div id="r1-c4" class="box"></div>
+        </div>
+        <!-- row 2 -->
+        <div class="row">
+            <div id="r2-c1" class="box"></div>
+            <div id="r2-c2" class="box"></div>
+            <div id="r2-c3" class="box"></div>
+            <div id="r2-c4" class="box"></div>
+        </div>
+        <!-- row 3 -->
+        <div class="row">
+            <div id="r3-c1" class="box"></div>
+            <div id="r3-c2" class="box"></div>
+            <div id="r3-c3" class="box"></div>
+            <div id="r3-c4" class="box"></div>
+        </div>
+        <!-- row 4 -->
+        <div class="row">
+            <div id="r4-c1" class="box"></div>
+            <div id="r4-c2" class="box"></div>
+            <div id="r4-c3" class="box"></div>
+            <div id="r4-c4" class="box"></div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

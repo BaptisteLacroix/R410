@@ -5,6 +5,13 @@ let grille;
 let coupNumber = 0;
 let score = 0;
 let isDelayed = false;
+let aiInterval = null;
+// TODO : add input for this
+let depthMax = 6;
+let speed = 1000;
+// Toutes les ressources de la page sont complètement chargées.
+window.onload = onLoad;
+
 
 function onLoad() {
     console.log('Processus de chargement du document terminé…');
@@ -16,11 +23,37 @@ function onLoad() {
         document.getElementById('game-won').style.display = 'none';
         init();
     });
+    document.getElementById('ai-start').addEventListener('click', async function () {
+        document.getElementById('game-won').style.display = 'none';
+        aiInterval = setInterval(function () {
+            let matrix = self.getMatrix();
+            let myMove = self.getMove(self.createCopy(matrix));
+            let rmat = self.moveCells(self.createCopy(matrix), myMove);
+            console.log(myMove);
+            if (self.isEqualMatrix(rmat, matrix))
+                myMove = (Math.floor(Math.random() * 100)) % 4;
+            switch (myMove) {
+                case 0:
+                    console.log("UP");
+                    moveUp();
+                    break;
+                case 1:
+                    console.log("RIGHT");
+                    moveRight();
+                    break;
+                case 2:
+                    console.log("DOWN");
+                    moveDown();
+                    break;
+                case 3:
+                    console.log("LEFT");
+                    moveLeft();
+                    break;
+            }
+        }, 100);
+    });
     init();
 }
-
-// Toutes les ressources de la page sont complètement chargées.
-window.onload = onLoad;
 
 
 /**
@@ -102,10 +135,12 @@ function keyboardAction(event) {
                 break;
         }
         if (isVictory()) {
+            clearInterval(aiInterval);
             let gamewon = document.getElementById('game-won');
             gamewon.style.display = 'block';
         }
         if (isDefeat()) {
+            clearInterval(aiInterval)
             let gamelost = document.getElementById('game-over');
             gamelost.style.display = 'block';
         }
@@ -696,14 +731,211 @@ function animate(actualBox, mostNearBox) {
     let leftMostNearBox = styleMostNearBox.getPropertyValue('left');
 
     mostNearBox.animate([{
-        top: topActualBox,
-        left: leftActualBox,
-        zIndex: 10
+        top: topActualBox, left: leftActualBox, zIndex: 10
     }, {
-        top: topMostNearBox,
-        left: leftMostNearBox,
-        zIndex: 10
+        top: topMostNearBox, left: leftMostNearBox, zIndex: 10
     }], {
         duration: 200, iterations: 1
     });
+}
+
+/******************************************/
+/******************************************/
+/*    THE AI CODE STARTS FROM HERE        */
+/* source : https://pastebin.com/Ebu3mQRL */
+/******************************************/
+/******************************************/
+
+/*  0:Up
+    1:Right
+    2:Down
+    3:Left
+*/
+
+function isValid(x, y) {
+    return !(x < 0 || x > 3 || y < 0 || y > 3);
+
+}
+
+function moveCells(matrix, move) {
+    let dx = [-1, 0, 1, 0];
+    let dy = [0, 1, 0, -1];
+    let nx, ny;
+    for (let k = 0; k < 3; k++) {
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                nx = i + dx[move];
+                ny = j + dy[move];
+                if (self.isValid(nx, ny)) {
+                    if (matrix[nx][ny] == 0) {
+                        matrix[nx][ny] = matrix[i][j];
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            nx = i + dx[move];
+            ny = j + dy[move];
+            if (self.isValid(nx, ny)) {
+                if (matrix[i][j] == matrix[nx][ny]) {
+                    matrix[nx][ny] *= -2;
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+    }
+    for (let k = 0; k < 3; k++) {
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                if (matrix[i][j] < 0)
+                    matrix[i][j] *= -1;
+                nx = i + dx[move];
+                ny = j + dy[move];
+                if (self.isValid(nx, ny)) {
+                    if (matrix[nx][ny] == 0) {
+                        matrix[nx][ny] = matrix[i][j];
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+    return matrix;
+}
+
+function evaluateMatrix(matrix) {
+    /* Count Number of Free Spaces */
+    let cc = 0;
+    for (let i = 0; i < 4; i++)
+        for (let j = 0; j < 4; j++) {
+            if (matrix[i][j] == 0)
+                cc += 100;
+            else
+                cc += matrix[i][j] * matrix[i][j];
+        }
+
+    return cc;
+}
+
+function printMatrix(matrix) {
+    for (let i = 0; i < 4; i++) {
+        let str = ""
+        for (let j = 0; j < 4; j++)
+            str += matrix[i][j] + " ";
+        console.log(str)
+    }
+    console.log("******************************");
+}
+
+function findFreeCell(matrix) {
+    let i, j, k = 0;
+    do {
+        i = (Math.floor(Math.random() * 100)) % 4;
+        j = (Math.floor(Math.random() * 100)) % 4;
+        k++;
+    } while (matrix[i][j] != 0 && k != 500);
+    if (matrix[i][j] != 0)
+        for (i = 0; i < 4; i++)
+            for (j = 0; j < 4; j++)
+                if (matrix[i][j] == 0)
+                    return ({x: i, y: j});
+
+    return ({x: i, y: j});
+}
+
+function isEqualMatrix(m1, m2) {
+    for (let i = 0; i < 4; i++)
+        for (let j = 0; j < 4; j++)
+            if (m1[i][j] != m2[i][j])
+                return false;
+    return true;
+}
+
+function minMax(matrix, move, depth) {
+    if (depth == depthMax)
+        return 0;
+    let rmatrix = self.moveCells(self.createCopy(matrix), move);
+    let areSame = self.isEqualMatrix(rmatrix, matrix);
+    let score = self.evaluateMatrix(rmatrix);
+
+    if (areSame == true)
+        return score - 1;
+    let maxVal = -1000, val, ret;
+    let freeCell = self.findFreeCell(rmatrix);
+    if (freeCell.x == 4 || freeCell.y == 4)
+        console.log("YES VALUE IS 4 || " + freeCell.x + " | " + freeCell.y);
+    rmatrix[freeCell.x][freeCell.y] = 2;
+    for (let x = 0; x < 4; x++) {
+        val = this.minMax(self.createCopy(rmatrix), x, depth + 1);
+        if (val > maxVal)
+            maxVal = val;
+    }
+    return (score + maxVal);
+}
+
+/**
+ *     console.log("depth = " + depth);
+ *     if (depth == depthMax)
+ *         return 0;
+ *     let rmatrix = self.moveCells(self.createCopy(matrix), move);
+ *     let areSame = self.isEqualMatrix(rmatrix, matrix);
+ *     let score = self.evaluateMatrix(rmatrix);
+ *
+ *     if (areSame == true)
+ *         return score - 1;
+ *     let maxVal = -1000, val, ret;
+ *     let freeCell = self.findFreeCell(rmatrix);
+ *     if (freeCell.x == 4 || freeCell.y == 4)
+ *         console.log("YES VALUE IS 4 || " + freeCell.x + " | " + freeCell.y);
+ *     rmatrix[freeCell.x][freeCell.y] = 2;
+ *     for (let x = 0; x < 4; x++) {
+ *         // use alpha-beta pruning
+ *         if (alpha >= beta) break;
+ *         val = this.alphaBeta(self.createCopy(rmatrix), x, depth + 1, alpha, beta);
+ *         if (val > maxVal) maxVal = val;
+ *         alpha = Math.max(alpha, maxVal);
+ *     }
+ *     return (score + maxVal);
+ * }
+ */
+function getMove(matrix) {
+
+    let maxVal = 0, val, ret;
+    for (let x = 0; x < 4; x++) {
+        val = this.minMax(self.createCopy(matrix), x, 0);
+        // console.log("Score for "+ x + ":" + val )
+        if (val > maxVal) {
+            maxVal = val;
+            ret = x;
+        }
+    }
+    return ret;
+}
+
+function getMatrix() {
+    let matrix = [];
+    for (let i = 0; i < 4; i++) {
+        let row = [];
+        for (let j = 0; j < 4; j++) {
+            console.log(grille)
+            let tile = grille[i][j];
+            if (tile == null)
+                row.push(0);
+            else
+                row.push(tile["value"]);
+        }
+        matrix.push(row);
+    }
+    return matrix;
+}
+
+function createCopy(matrix) {
+    let ret = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    for (let i = 0; i < 4; i++)
+        for (let j = 0; j < 4; j++)
+            ret[i][j] = matrix[i][j].valueOf();
+    return ret;
 }

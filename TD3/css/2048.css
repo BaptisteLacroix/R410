@@ -229,6 +229,25 @@ h1 {
     font-size: 2em;
 }
 
+#instructions {
+    height: 200px;
+    text-align: center;
+}
+
+#ai {
+    line-height: 10px;
+    text-align: center;
+}
+
+#ai button {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid black;
+    font-size: 0.5em;
+    background-color: #eee4da;
+}
+
 #game-over {
     position: absolute;
     top: 0;
