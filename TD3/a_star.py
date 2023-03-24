@@ -373,6 +373,9 @@ def a_star():
     goal = url[1].split("=")[1].replace("%20", " ").replace("%22", "")
     size = int(url[2].split("=")[1].replace("%22", "").replace("' [GET]>>", ""))
 
+
+    print("initial: ", initial)
+    print("goal: ", goal)
     # create the initial state
     initial = EightPuzzle(initial, size)
     goal = EightPuzzle(goal, size)
