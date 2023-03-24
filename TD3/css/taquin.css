@@ -155,3 +155,18 @@ p {
     z-index: 999;
     display: none;
 }
+
+select#image {
+    font-size: 0.5em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    border: none;
+    background-color: #1E90FF;
+    color: #fff;
+    cursor: pointer;
+}
+
+select#image option {
+    background-color: #1E90FF;
+    color: #fff;
+}
