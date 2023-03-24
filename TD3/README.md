@@ -145,3 +145,21 @@ Les fonctions mergeTo{Left,Right}(row) ou mergeTo{Up,Down}(column) fusionneront 
 Attention, ici on ne déplace pas de cases, certaines doublent de valeur, d’autres deviennent vide.
 Les fonctions isEmptyRow(row) et isEmptyColumn(column) retourne vrai si la ligne (ou la
 colonne) ne contient que des éléments de valeur vide.
+
+# Jeu de Taquin avec Serveur python.
+
+Pour exécuter le serveur, il faut installer python3 et pip3, puis lancer les commandes suivantes :
+
+````bash
+pip install Flask
+pip install Flask-Cors
+````
+
+Ensuite, il faut lancer le serveur avec la commande suivante :
+
+````bash
+flask --app a_star.py run
+````
+
+Ensuite lancer le fichier index.html dans un navigateur web.
+et le tour est joué.

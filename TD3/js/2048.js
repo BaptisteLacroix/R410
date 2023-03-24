@@ -7,7 +7,7 @@ let score = 0;
 let isDelayed = false;
 let aiInterval = null;
 // TODO : add input for this
-let depthMax = 6;
+let depthMax = 7;
 let speed = 1000;
 // Toutes les ressources de la page sont complètement chargées.
 window.onload = onLoad;

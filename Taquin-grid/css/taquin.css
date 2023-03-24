@@ -56,11 +56,12 @@ p {
     border-style: solid;
     border-width: 1px;
     /*background-color: #00008B;*/
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, 0%);
-    width: 306px;
-    height: 306px;
+    display: grid;
+    grid-template-columns: repeat(3, 102px);
+    grid-template-rows: repeat(3, 102px);
+    width: fit-content;
+    height: fit-content;
+    margin: 0 auto;
 }
 
 /* row 1 */
@@ -121,7 +122,6 @@ p {
     padding: 0;
     width: 100px;
     height: 100px;
-    position: absolute;
     z-index: 1;
     transition-property: top, left;
     transition-duration: 3s;
@@ -139,7 +139,6 @@ p {
 .empty {
     /*background-color: #00008B;*/
     z-index: 10;
-    opacity: 0.1;
 }
 
 #victory-message {
@@ -154,4 +153,19 @@ p {
     text-align: center;
     z-index: 999;
     display: none;
+}
+
+select#image {
+    font-size: 0.5em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    border: none;
+    background-color: #1E90FF;
+    color: #fff;
+    cursor: pointer;
+}
+
+select#image option {
+    background-color: #1E90FF;
+    color: #fff;
 }
