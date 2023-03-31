@@ -135,13 +135,15 @@ function solve() {
                 moveBox(move);
                 await sleep(500);
             }
+            // wait the last case has moved to check if the puzzle is solved
+            // await sleep(response.length * 500);
             console.log(solved);
             if (solved) {
                 victoryScreen();
             }
             clicked = false;
         }, error: function (error) {
-            console.log(error.responseText);
+            console.log("Server not started or not responding");
         }
     });
 }
@@ -227,7 +229,7 @@ function init() {
             document.getElementById('btnSolve').disabled = false;
             document.getElementById('btnSolve').style.opacity = '1';
         }, error: function (error) {
-            console.log(error.responseText);
+            console.log("Server not started or not responding");
             grid = randomGrid();
             // create a copy of the grid
             for (let i = 0; i < grid.length; i++) {
@@ -385,12 +387,16 @@ function animation(actualBox, emptyBox) {
  */
 function isSolve() {
     let divs = document.getElementsByClassName('box');
+    let isSolved = true;
+    console.log(divs)
     for (let i = 0; i < divs.length; i++) {
-        if (divs[i].innerHTML !== grid[i]) {
-            return false;
+        if (i === 0 && divs[i].innerHTML !== "") {
+            isSolved = false;
+        } else if (divs[i].innerHTML != i) {
+            isSolved = false;
         }
     }
-    return true;
+    return isSolved;
 }
 
 /**
